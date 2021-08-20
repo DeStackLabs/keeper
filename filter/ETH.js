@@ -3,6 +3,7 @@
  */
 
 const Web3 = require('web3');
+const Web3WsProvider = require('web3-providers-ws')
 const {
     logger
 } = require("../lib/log");
@@ -11,36 +12,38 @@ const kafka = require("../lib/kafka")
 
 class ETH {
     constructor(chain, config, channel) {
-        this.heightPath=__dirname + '/height/eth'
+        this.heightPath = __dirname + '/height/eth'
         this.name = 'ETH'
         this.chain = chain
-        this.web3 = new Web3(config.ws[0]);
-
-
+        this.web3 = new Web3(new Web3WsProvider(config.ws[0], config.websocketOptions));
     }
     //追上最新高度
     async sync() {
+        let end = await this.web3.eth.getBlockNumber()
         let last = parseInt(fs.readFileSync(this.heightPath))
         while (last <= await this.web3.eth.getBlockNumber()) {
-            let block=await  this.web3.eth.getBlock(last, true)
-            this.process(block)
-          
-            last++
+            try {
+                let block = await this.web3.eth.getBlock(last, true)
+                this.process(block)
+                last++
+            } catch (e) {
+                console.log('sync', e)
+            }
         }
     }
-    process(block){
-        if (!block || !block.transactions ){
-            console.log('Filter ETH Process  Error Block ',block)
-            return 
+    process(block) {
+        if (!block || !block.transactions) {
+            console.log('Filter ETH Process  Error Block Or Empty Block', block)
+            return
         }
         for (let i = 0; i < block.transactions.length; i++) {
             let t = block.transactions[i]
             this.send({ number: block.number, blockHash: block.hash, transactionIndex: t.transactionIndex, from: t.from, to: t.to, value: t.value })
         }
         //todo coinbase
-        
-        fs.writeFileSync(this.heightPath,block.number.toString()) //写入更新
-        console.log('Filter ETH Process  Block',block.number)
+
+        fs.writeFileSync(this.heightPath, block.number.toString()) //写入更新
+        console.log('Filter ETH Process  Block', block.number)
     }
     async start() {
         logger.info('Filter ETH start')
@@ -73,10 +76,10 @@ class ETH {
                     }
          */
         kafka.send({
-            key:'ETH',
-            value:transaction
+            key: 'ETH',
+            value: transaction
         })
-        console.log(transaction)
+        //console.log(transaction)
     }
 
 

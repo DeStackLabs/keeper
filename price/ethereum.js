@@ -15,7 +15,7 @@ class Ethereum {
             if (name2id[name]) {
                 this.tokenIds.push(name2id[name])
                 config.tokenlist.tokens[i].id = name2id[name]
-                this.id2contract[name2id[name]] = config.tokenlist.tokens[i].address //缓存 id=>合约地址
+                this.id2contract[name2id[name]] = config.tokenlist.tokens[i].address.toLowerCase() //缓存 id=>合约地址
             }
         }
         this.init()

@@ -2,7 +2,8 @@ const redis = require('../lib/redis')
 const KEY = require('../lib/key')
 const Eth = require('../realtime/ETH')
 const Erc20 = require('../realtime/ERC20')
-const BN = require('bn.js');
+const BN = require('bignumber.js');
+BN.config({ DECIMAL_PLACES: 6 })
 
 class Ethereum {
     constructor() {
@@ -26,37 +27,34 @@ class Ethereum {
                 balance = new BN(balances[contract])
                 price = await redis.get(KEY.ETHEREUM_PRICE(contract))
                 price = JSON.parse(price)
-                if (!balance.isZero() /*&& price && price.usd*/) {
+                if (!balance.isZero() && !balance.isNaN()/*&& price && price.usd*/) {
                     if (this.contracts[contract] ) {
                         let symbol = this.contracts[contract].symbol
                         let name = this.contracts[contract].name
                         let decimals = this.contracts[contract].decimals
 
-                        let pricePrecision=1000000
-                        let oldPrice=price.usd
-                        let newPrice=new BN(oldPrice*pricePrecision) //避免丢失精度
-                        let value=balance.mul(newPrice)
-
-                        let base=new BN(10)
-                        value=value.div(base.pow(new BN(decimals)))
-                        value=value.div(new BN(pricePrecision))
-
-                        wallet['totalValue']=wallet['totalValue'].add(value)
+                        price=price.usd
+                        let value=balance.multipliedBy(price)
+                        value=value.dividedBy(Math.pow(10,decimals))
+                        balance=balance.dividedBy(Math.pow(10,decimals))
+                        
+                        wallet['totalValue']=wallet['totalValue'].plus(value)
                         wallet[symbol]={
                             contract:contract,
                             symbol:symbol,
                             name:name,
                             decimals:decimals,
-                            price:oldPrice,
+                            price:price,
                             balance:balance.toString(),
                             value:value.toString()
                         }
-                        console.log(contract, address, symbol, name, decimals, oldPrice,newPrice.toString(), balance.toString(),'value=',value.toString())
+                        
+                        console.log(contract, address, symbol, name, decimals,price.toString(), balance.toString() ,'value=',value.toString() )
                     }
 
                 }
             } catch (e) {
-                //console.log('Wallet Parse Error', e, address, balance, price)
+                console.log('Wallet Parse Error', e, address, balance, price)
             }
 
 

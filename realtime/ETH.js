@@ -1,5 +1,6 @@
 const redis = require('../lib/redis')
 const Web3 = require('web3');
+const Web3WsProvider = require('web3-providers-ws')
 /**
  *  更新ETH 资产
  */
@@ -13,8 +14,8 @@ const KEY = require('../lib/key')
 class ETH {
     constructor() {
         this.name = 'ETH'
-        this.ETH_CONTRACT=config.chain.ethereum.CONTRACT
-        this.web3 = new Web3(config.chain.ethereum.ws[0]);
+        this.ETH_CONTRACT = config.chain.ethereum.CONTRACT
+        this.web3 = new Web3(new Web3WsProvider(config.chain.ethereum.ws[0], config.chain.ethereum.websocketOptions));
     }
 
     async real(transaction) {

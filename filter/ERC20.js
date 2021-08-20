@@ -3,6 +3,7 @@
  *  TODO:追赶块高问题
  */
 const Web3 = require('web3');
+const Web3WsProvider = require('web3-providers-ws')
 const {
     logger
 } = require("../lib/log");
@@ -11,10 +12,10 @@ const kafka = require("../lib/kafka")
 
 class ERC20 {
     constructor(chain, config, channel) {
-        this.heightPath=__dirname + '/height/erc20'
+        this.heightPath = __dirname + '/height/erc20'
         this.name = 'ERC20'
         this.chain = chain
-        this.web3 = new Web3(config.ws[0]);
+        this.web3 = new Web3(new Web3WsProvider(config.ws[0], config.websocketOptions));
         this.addresses = [] //关注的token地址
         for (let i = 0; i < config.tokenlist.tokens.length; i++) {
             this.addresses.push(config.tokenlist.tokens[i].address)
@@ -33,12 +34,17 @@ class ERC20 {
     async sync() {
         let last = parseInt(fs.readFileSync(this.heightPath))
         while (last <= await this.web3.eth.getBlockNumber()) {
-            let block = await this.web3.eth.getBlock(last, true)
-            let events = await this.web3.eth.getPastLogs({ fromBlock: last, toBlock: last, address: this.options.address, topics: this.options.topics })
-            for (let i = 0; i < events.length; i++)
-                this.process(events[i])
+            //let block = await this.web3.eth.getBlock(last, true)
+            try {
+                let events = await this.web3.eth.getPastLogs({ fromBlock: last, toBlock: last, address: this.options.address, topics: this.options.topics })
+                for (let i = 0; i < events.length; i++)
+                    this.process(events[i])
 
-            last++
+                last++
+            } catch (e) {
+                console.log('sync error', e)
+            }
+
         }
     }
     process(event) {
@@ -48,12 +54,11 @@ class ERC20 {
         this.send(event)
 
         fs.writeFileSync(this.heightPath, event.blockNumber.toString()) //写入更新
-        console.log('Filter ERC20 Process Event', event.blockNumber.toString(),event.logIndex.toString())
+        console.log('Filter ERC20 Process Event', event.blockNumber.toString(), event.logIndex.toString())
     }
 
 
     async start() {
-
         logger.info('Filter ERC20 Start')
         await this.sync()
         /**
@@ -96,10 +101,10 @@ class ERC20 {
                     }
          */
         kafka.send({
-            key:'ERC20',
-            value:transfer
+            key: 'ERC20',
+            value: transfer
         })
-        console.log(transfer)
+        //console.log(transfer)
     }
 }
 

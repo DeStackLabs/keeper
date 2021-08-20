@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "@balancer-labs/v2-deployments": "^1.1.1",
     "@openzeppelin/contracts": "^4.2.0",
+    "bignumber.js": "^9.0.1",
     "bn.js": "^5.2.0",
     "coingecko-api": "^1.0.10",
     "crypto": "^1.0.1",
