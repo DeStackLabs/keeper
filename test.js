@@ -8,10 +8,12 @@ web3.eth.getAccounts().then(console.log);
 
 let address='0x8c766a2d8aefcf133696ba6089cfdd61582ea4ae'
 
-const BalancerV2=require('./realtime/defi/BalancerV2')
 
-let B=new BalancerV2()
-B.assets(address).then((a)=>{
+const UniswapV2=require('./query/defi/UniswapV2')
+
+
+let U = new UniswapV2()
+U.assets(address).then((a) => {
     console.log(JSON.stringify(a))
 })
 

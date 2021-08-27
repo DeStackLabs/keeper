@@ -47,6 +47,7 @@ class Ethereum {
                         vs_currencies: this.currencies
                     })
                     if (tokens.success) {
+                        //todo 这里如果没有价格,去DEX取
                         for (let id in tokens.data) {
                             let contract = this.id2contract[id]
                             let price = tokens.data[id]

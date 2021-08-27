@@ -20,6 +20,7 @@ module.exports = function config() {
                 for (name in config.chain[chain].abis) {
                     try {
                         let abi = JSON.parse(fs.readFileSync(__dirname + '/abi/' + name + '.abi'))
+                        abi=abi.abi?abi.abi:abi
                         config.chain[chain].abis[name] = abi
                     } catch (err) {
                         console.log('Load Extend Config Error：' + __dirname + '/abi/' + name + '.abi')
