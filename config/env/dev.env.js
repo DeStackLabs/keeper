@@ -6,7 +6,7 @@ module.exports = {
         'ethereum': {
             'chainId': 1,
             'CONTRACT': '0x00000000000000000000000000000000',
-            'ws': ['ws://47.119.181.27:9546', 'wss://mainnet.infura.io/ws/v3/861993c46ab2463498f1683b6883eda3'],
+            'ws': ['wss://mainnet.infura.io/ws/v3/861993c46ab2463498f1683b6883eda3'],
             'filters': ['ETH', 'ERC20'],
             'abis': { 'ERC20': '' ,'BalancerV2Value':'','IUniswapV2Factory':'','IUniswapV2Pair':''},
             'defi':['BalancerV2','UniswapV2'],
